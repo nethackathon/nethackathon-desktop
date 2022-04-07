@@ -1,12 +1,19 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, ipcMain, shell } from 'electron'
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+import { app, protocol, BrowserWindow, ipcMain, shell } from 'electron';
+import * as fs from 'fs';
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
+import { c } from 'tar';
+import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
+import axios from 'axios';
+import FData from 'form-data';
+const isDev = (process.env.NODE_ENV === 'development')
+const apiRoute = 'https://api.nethackathon.org'
+const devRoute = 'http://localhost:3000'
+const baseRoute = (isDev) ? devRoute : apiRoute
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
-// const childProcess = require('child_process').execFile;
 const path = require('path');
 const nethackPath = path.join(__dirname, '/nethack/nethack')
 
@@ -14,6 +21,17 @@ const nethackPath = path.join(__dirname, '/nethack/nethack')
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
+
+function getNetHackZip() {
+  const archivePath = path.join(__dirname, 'nethack.tgz');
+  c({ gzip: true, portable: true, C: __dirname, sync: true }, ['nethack'])
+    .pipe(fs.createWriteStream(archivePath))
+  return archivePath;
+}
+
+async function launchNetHack() {
+  shell.openPath(nethackPath);
+}
 
 async function createWindow() {
   // Create the browser window.
@@ -40,8 +58,28 @@ async function createWindow() {
     win.loadURL('app://./index.html')
   }
   
-  ipcMain.on('launch-nethack', () => {
-    shell.openPath(nethackPath);
+  ipcMain.on('launch-nethack', launchNetHack)
+  
+  ipcMain.handle('upload-nethack-zip', async (evt, args) => {
+    const archivePath = getNetHackZip();
+    const route = baseRoute + '/invoke/uploadSave';
+    let formData = new FData();
+    formData.append('file', fs.createReadStream(archivePath));
+
+    const request_config = {
+      headers: {
+        'Authorization': `Bearer ${args.accessToken}`,
+        ...formData.getHeaders()
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity
+    };
+
+    await axios.post(route, 
+      formData, 
+      request_config);
+      
+    return 'done';
   })
 }
 

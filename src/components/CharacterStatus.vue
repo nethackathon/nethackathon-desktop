@@ -5,7 +5,7 @@
         <h2>Loading</h2>
       </v-col>
       <v-col offset="2" cols="8" v-if="!loading" align="center">
-        <p>Sir {{ characterName }} {{ (claimedBy === null) ? 'is available to play' : `has been claimed by ${claimedBy}` }}.</p>
+        <p>Sir {{ characterName }} {{ (claimedBy === null) ? 'is available to play' : `has been claimed by ${(claimee === claimedBy) ? 'YOU' : claimedBy}` }}.</p>
       </v-col>
     </v-row>
   </v-container>
@@ -22,7 +22,7 @@ export default {
   components: {
   },
 
-  props: ['characterName', 'claimedBy', 'loading'],
+  props: ['characterName', 'claimedBy', 'loading', 'claimee'],
 
   methods: {
   },
