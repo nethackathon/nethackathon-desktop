@@ -65,6 +65,7 @@ async function createWindow() {
     const route = baseRoute + '/invoke/uploadSave';
     let formData = new FData();
     formData.append('file', fs.createReadStream(archivePath));
+    formData.append('characterName', args.characterName);
 
     const request_config = {
       headers: {

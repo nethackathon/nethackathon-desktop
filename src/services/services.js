@@ -18,3 +18,8 @@ export async function claimCharacter (requestJson) {
   const route = baseRoute + '/invoke/adventurer'
   return axios.post(route, requestJson, {withCredentials: true})
 }
+
+export async function releaseCharacter (requestJson) {
+  const route = baseRoute + '/invoke/releaseAdventurer'
+  return axios.post(route, requestJson, {withCredentials: true})
+}

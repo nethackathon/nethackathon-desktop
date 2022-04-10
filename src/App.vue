@@ -38,7 +38,7 @@ import CharacterStatus from "./components/CharacterStatus";
 import NetHackLauncher from "./components/NetHackLauncher";
 import ClaimCharacter from "./components/ClaimCharacter";
 import Login from "./components/Login"
-import {get, claimCharacter, getCharacterStatus} from "./services/services";
+import {get, claimCharacter, getCharacterStatus, releaseCharacter} from "./services/services";
 import UploadNetHack from "./components/UploadNetHack";
 import LoggedIn from "./components/LoggedIn";
 
@@ -85,14 +85,17 @@ export default {
         this.uploading = true
         await window.ipcRenderer.invoke('upload-nethack-zip', {
           accessToken: this.accessToken,
-          claimee: this.claimee
+          claimee: this.claimee,
+          characterName: this.characterName
         })
+        await releaseCharacter({ characterName: this.characterName })
       } catch (err) {
         console.error(err)
         this.errMessage = err.message
         this.uploading = false
         this.logout()
       } finally {
+        this.claimedBy = null
         this.uploading = false
       }
     },
