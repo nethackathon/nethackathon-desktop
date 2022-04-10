@@ -26,7 +26,6 @@ export default {
   methods: {
     login: function() {
       const uri = (process.env.NODE_ENV === 'development') ? 'http://localhost:3000/twitch/electron' : 'https://api.nethackathon.org/twitch/electron'
-      console.log('uri', uri)
       location.href = uri
     }
   },

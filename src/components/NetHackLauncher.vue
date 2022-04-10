@@ -3,12 +3,14 @@
     <v-row>
       <v-col offset="2" cols="8" align="center">
         <v-toolbar dense flat>
+          <v-spacer/>
           <v-btn
               class="ml-4"
               @click="launchNetHack"
           >
-            Launch
+            Launch NetHack
           </v-btn>
+          <v-spacer/>
         </v-toolbar>
       </v-col>
     </v-row>

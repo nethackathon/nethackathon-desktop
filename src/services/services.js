@@ -11,7 +11,7 @@ export async function get () {
 
 export async function getCharacterStatus (characterName) {
   const route = baseRoute + `/invoke/adventurer?character_name=${encodeURI(characterName)}`
-  return axios.get(route)
+  return axios.get(route, {withCredentials: true})
 }
 
 export async function claimCharacter (requestJson) {

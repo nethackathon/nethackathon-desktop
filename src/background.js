@@ -3,7 +3,7 @@
 import { app, protocol, BrowserWindow, ipcMain, shell } from 'electron';
 import * as fs from 'fs';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-import { c } from 'tar';
+import { c, x } from 'tar';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import axios from 'axios';
 import FData from 'form-data';
@@ -22,8 +22,8 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
-function getNetHackZip() {
-  const archivePath = path.join(__dirname, 'nethack.tgz');
+function getNetHackZip(claimee) {
+  const archivePath = path.join(__dirname, `${claimee}_${new Date().getTime()}.tgz`);
   c({ gzip: true, portable: true, C: __dirname, sync: true }, ['nethack'])
     .pipe(fs.createWriteStream(archivePath))
   return archivePath;
@@ -61,7 +61,7 @@ async function createWindow() {
   ipcMain.on('launch-nethack', launchNetHack)
   
   ipcMain.handle('upload-nethack-zip', async (evt, args) => {
-    const archivePath = getNetHackZip();
+    const archivePath = getNetHackZip(args.claimee);
     const route = baseRoute + '/invoke/uploadSave';
     let formData = new FData();
     formData.append('file', fs.createReadStream(archivePath));
@@ -80,6 +80,28 @@ async function createWindow() {
       request_config);
       
     return 'done';
+  })
+  
+  ipcMain.handle('download-nethack-zip', async (evt, args) => {
+    const archivePath = path.join(__dirname, args.fileName);
+    const route = baseRoute + '/invoke/downloadSave';
+    
+    await axios.post(route, { fileName: args.fileName }, {
+      responseType: 'stream',
+      headers: {
+        'Authorization': `Bearer ${args.accessToken}`
+      }
+    }).then(function (response) {
+      const stream = response.data.pipe(fs.createWriteStream(archivePath));
+      stream.on('finish', async () => {
+        // delete existing 'nethack' directory
+        await fs.promises.rmdir(path.join(__dirname, 'nethack'), { recursive: true, force: true });
+        // extract zip
+        x({ file: archivePath , C: __dirname, sync: true });
+        return 'done';
+      });
+    });
+
   })
 }
 

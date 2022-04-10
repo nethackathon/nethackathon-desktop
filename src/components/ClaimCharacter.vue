@@ -3,14 +3,15 @@
     <v-row>
       <v-col offset="2" cols="8" align="center">
         <v-toolbar dense flat>
-          <v-text-field v-model="claimee" label="Username" dense hide-details outlined readonly />
+          <v-spacer/>
           <v-btn
-              class="ml-4"
               @click="$emit('claim-character')"
-              :disabled="claimedBy !== null"
+              :disabled="downloading || claimedBy !== null"
+              :loading="downloading"
           >
-            Claim
+            Download save
           </v-btn>
+          <v-spacer/>
         </v-toolbar>
       </v-col>
     </v-row>
@@ -36,7 +37,7 @@ export default {
   components: {
   },
 
-  props: ['characterName', 'claimedBy', 'claimee'],
+  props: ['characterName', 'claimedBy', 'claimee', 'downloading'],
 
   mounted: function () {
   },
